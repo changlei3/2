@@ -1,2 +1,792 @@
-# 2
-作业
+[index.html](https://github.com/user-attachments/files/26487503/index.html)
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>星空咖啡馆 | 静谧时光·醇香漫溢</title>
+    <!-- 使用现代、干净的字体体系 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 (免费图标库) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0c12;
+            font-family: 'Inter', sans-serif;
+            color: #edeef2;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e1f2a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c9a87b;
+            border-radius: 8px;
+        }
+
+        /* 全局容器 */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* 动态星空背景 (canvas 覆盖) */
+        #stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(circle at 20% 30%, #0b0e17, #020308);
+            display: block;
+        }
+
+        /* 半透明磨砂层增加可读性 (可选) */
+        .overlay-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 70% 20%, rgba(30, 25, 55, 0.3), rgba(0, 0, 0, 0.65));
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 头部导航 */
+        header {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(201, 168, 123, 0.25);
+            backdrop-filter: blur(4px);
+            background: rgba(10, 12, 18, 0.6);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        /* ========= 全新品牌LOGO (SVG图形 + 文字) ========= */
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .brand-logo:hover {
+            transform: scale(1.02);
+        }
+        .logo-icon {
+            position: relative;
+            width: 52px;
+            height: 52px;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+        }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        .logo-cn {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #F5E7D3, #C9A87B);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+        }
+        .logo-en {
+            font-size: 0.65rem;
+            letter-spacing: 2.5px;
+            color: #dbb47a;
+            text-transform: uppercase;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+        /* 响应式：小屏略微缩小logo */
+        @media (max-width: 640px) {
+            .logo-icon {
+                width: 42px;
+                height: 42px;
+            }
+            .logo-cn {
+                font-size: 1.3rem;
+            }
+            .logo-en {
+                font-size: 0.55rem;
+                letter-spacing: 1.8px;
+            }
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #e9e6f0;
+            font-weight: 500;
+            transition: 0.2s ease;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+        }
+        .nav-links a:hover {
+            color: #dbb47a;
+            border-bottom: 1px solid #dbb47a;
+            padding-bottom: 4px;
+        }
+
+        /* 按钮风格 */
+        .btn-outline {
+            border: 1px solid #c9a87b;
+            background: transparent;
+            padding: 0.6rem 1.4rem;
+            border-radius: 40px;
+            color: #f0e2d0;
+            font-weight: 500;
+            transition: 0.25s;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-outline:hover {
+            background: #c9a87b;
+            color: #0a0c12;
+            border-color: #c9a87b;
+        }
+        .btn-primary {
+            background: #c9a87b;
+            border: none;
+            padding: 0.7rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #0c0f17;
+            transition: 0.2s;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 12px rgba(201,168,123,0.3);
+        }
+        .btn-primary:hover {
+            background: #deb887;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(201,168,123,0.4);
+        }
+
+        /* Hero 区域 */
+        .hero {
+            padding: 5rem 0 6rem 0;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3.8rem;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            line-height: 1.2;
+            background: linear-gradient(120deg, #ffffff, #e2cdb0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1.2rem;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 650px;
+            margin: 0 auto 2rem auto;
+            color: #cdd0e0;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* 通用章节 */
+        section {
+            padding: 5rem 0;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 3rem;
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .section-title span {
+            background: linear-gradient(135deg, #f3e3cf, #c9a87b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .title-deco {
+            display: block;
+            width: 70px;
+            height: 3px;
+            background: #c9a87b;
+            margin: 0.8rem auto 0;
+            border-radius: 3px;
+        }
+
+        /* 特色卡片网格 */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        .feature-card {
+            background: rgba(20, 22, 32, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 2rem 1.8rem;
+            text-align: center;
+            border: 1px solid rgba(201, 168, 123, 0.3);
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: #c9a87b;
+            background: rgba(30, 32, 45, 0.8);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.4);
+        }
+        .feature-icon {
+            font-size: 2.8rem;
+            color: #dbb47a;
+            margin-bottom: 1.2rem;
+        }
+        .feature-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+        .feature-card p {
+            color: #b9bfdf;
+            font-size: 0.95rem;
+        }
+
+        /* 咖啡菜单区域 */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .menu-item {
+            background: rgba(15, 17, 26, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+            border: 1px solid rgba(201,168,123,0.2);
+            transition: 0.2s;
+        }
+        .menu-item:hover {
+            border-color: #c9a87b70;
+            background: rgba(26, 28, 40, 0.8);
+        }
+        .menu-img {
+            font-size: 3rem;
+            width: 70px;
+            text-align: center;
+        }
+        .menu-info {
+            flex: 1;
+        }
+        .menu-info h4 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+        }
+        .menu-info .price {
+            color: #e7c69f;
+            font-weight: 600;
+        }
+        .menu-desc {
+            font-size: 0.85rem;
+            color: #aaafcc;
+        }
+
+        /* 营业时间 + 引用 */
+        .info-block {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            background: rgba(10, 12, 20, 0.6);
+            backdrop-filter: blur(6px);
+            border-radius: 2.5rem;
+            padding: 2rem 2.5rem;
+            border: 1px solid rgba(201,168,123,0.3);
+        }
+        .hours, .quote {
+            flex: 1;
+            min-width: 220px;
+            text-align: center;
+        }
+        .hours i, .quote i {
+            font-size: 2rem;
+            color: #dbb47a;
+            margin-bottom: 1rem;
+        }
+        .hours h3, .quote h3 {
+            font-size: 1.7rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .hours p {
+            line-height: 1.9;
+            font-size: 1rem;
+        }
+        .quote blockquote {
+            font-style: italic;
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            font-family: 'Playfair Display', serif;
+            color: #f3e2cf;
+        }
+
+        /* 预订/联系表单简约区域 */
+        .contact-simple {
+            background: rgba(20, 22, 32, 0.5);
+            border-radius: 2rem;
+            padding: 2rem 2rem;
+            text-align: center;
+            backdrop-filter: blur(4px);
+            border: 1px solid #2e2e3e;
+        }
+        .contact-simple h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .contact-simple p {
+            margin-bottom: 1.8rem;
+            color: #cbd0e6;
+        }
+        .contact-form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .contact-form input {
+            flex: 2;
+            min-width: 200px;
+            padding: 0.9rem 1.2rem;
+            border-radius: 60px;
+            border: none;
+            background: #1f212e;
+            color: #f0eef7;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            border: 1px solid #3f3f55;
+            transition: 0.2s;
+        }
+        .contact-form input:focus {
+            border-color: #c9a87b;
+        }
+        .contact-form button {
+            flex: 1;
+            min-width: 120px;
+            border-radius: 60px;
+            background: #c9a87b;
+            border: none;
+            font-weight: 600;
+            color: #11131f;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .contact-form button:hover {
+            background: #dbb47a;
+        }
+
+        /* footer */
+        footer {
+            padding: 2rem 0 2.5rem;
+            border-top: 1px solid rgba(201,168,123,0.2);
+            text-align: center;
+            font-size: 0.9rem;
+            color: #9a9fc2;
+        }
+        .social-links {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.8rem;
+        }
+        .social-links a {
+            color: #c1c6e0;
+            font-size: 1.3rem;
+            transition: 0.2s;
+        }
+        .social-links a:hover {
+            color: #e3bc85;
+        }
+
+        @media (max-width: 720px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+            .hero h1 {
+                font-size: 2.4rem;
+            }
+            .nav-links {
+                gap: 1.2rem;
+            }
+            .section-title {
+                font-size: 2rem;
+            }
+            .menu-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            .info-block {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 动态星空画布 -->
+    <canvas id="stars-canvas"></canvas>
+    <div class="overlay-glow"></div>
+
+    <header>
+        <div class="container nav-bar">
+            <!-- 全新品牌LOGO：内嵌精致SVG + 文字 (点击可回到顶部) -->
+            <div class="brand-logo" id="brandLogo">
+                <div class="logo-icon">
+                    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));">
+                        <!-- 深邃月亮主体 -->
+                        <circle cx="28" cy="26" r="17" fill="#C9A87B" opacity="0.95"/>
+                        <!-- 月牙暗部（模拟新月） -->
+                        <circle cx="34" cy="20" r="13" fill="#0A0C12"/>
+                        <!-- 点缀星星（大） -->
+                        <path d="M12 9L13.5 13L18 13L14.5 16L16 21L12 18L8 21L9.5 16L6 13L10.5 13L12 9Z" fill="#F5E7D3"/>
+                        <!-- 小星星1 -->
+                        <path d="M40 34L41 36.5L44 36.5L41.5 38.5L42.5 41L40 39L37.5 41L38.5 38.5L36 36.5L39 36.5L40 34Z" fill="#F5E7D3" opacity="0.9"/>
+                        <!-- 微光星点 -->
+                        <circle cx="22" cy="36" r="2.2" fill="#FDF0DB" opacity="0.8"/>
+                        <circle cx="44" cy="14" r="1.5" fill="#F5E7D3" opacity="0.7"/>
+                        <circle cx="8" cy="32" r="1.8" fill="#F5E7D3" opacity="0.6"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <div class="logo-cn">星空咖啡馆</div>
+                    <div class="logo-en">STARLIGHT CAFE</div>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">首页</a></li>
+                <li><a href="#features">特色</a></li>
+                <li><a href="#menu">咖啡单</a></li>
+                <li><a href="#contact">预约</a></li>
+            </ul>
+            <div>
+                <button class="btn-outline" id="reserveNavBtn">星享座位</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero 区域 -->
+        <section id="home">
+            <div class="container hero">
+                <h1>星辰低语 · 咖啡暖意</h1>
+                <p>在静谧星空下，品味手工慢烘的纯粹风味。每一杯都蕴藏银河的温柔，让时光慢下来。</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" id="exploreMenuBtn">探索星尘菜单</button>
+                    <button class="btn-outline" id="storyBtn">我们的故事</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 特色亮点 -->
+        <section id="features">
+            <div class="container">
+                <div class="section-title">
+                    <span>星际风味·沉浸体验</span>
+                    <div class="title-deco"></div>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-seedling"></i></div>
+                        <h3>单一产地精品豆</h3>
+                        <p>直接贸易，高海拔庄园，杯测评分90+，保留花果香与层次感。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-mug-hot"></i></div>
+                        <h3>手冲艺术家</h3>
+                        <p>资深咖啡师精确控温，三段式萃取，展现豆子最纯净的风土。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-cookie-bite"></i></div>
+                        <h3>星尘甜点工坊</h3>
+                        <p>当日新鲜烘焙可颂、提拉米苏，与咖啡共舞的银河搭配。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 菜单展示 -->
+        <section id="menu">
+            <div class="container">
+                <div class="section-title">
+                    <span>星空特调 · 季节臻选</span>
+                    <div class="title-deco"></div>
+                </div>
+                <div class="menu-grid">
+                    <div class="menu-item">
+                        <div class="menu-img"><i class="fas fa-mug-saucer"></i></div>
+                        <div class="menu-info">
+                            <h4>银河拿铁 <span class="price">¥32</span></h4>
+                            <p class="menu-desc">意式浓缩 + 丝滑燕麦奶，撒上可食用闪粉，如星河荡漾。</p>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-img"><i class="fas fa-wind"></i></div>
+                        <div class="menu-info">
+                            <h4>月桂手冲 <span class="price">¥48</span></h4>
+                            <p class="menu-desc">埃塞俄比亚 花语，柑橘酸质与茉莉余韵，浅烘焙。</p>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-img"><i class="fas fa-moon"></i></div>
+                        <div class="menu-info">
+                            <h4>暗夜星空dirty <span class="price">¥36</span></h4>
+                            <p class="menu-desc">冰博客提纯乳+双份浓缩，冷热交融，口感绵密。</p>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-img"><i class="fas fa-crown"></i></div>
+                        <div class="menu-info">
+                            <h4>皇家比利时 <span class="price">¥58</span></h4>
+                            <p class="menu-desc">虹吸壶现煮，黑巧克力与坚果调性，附手工曲奇。</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 2.8rem;">
+                    <button class="btn-outline" id="fullMenuBtn"><i class="fas fa-star"></i> 查看完整星尘菜单</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 营业时间 + 名人名言模块 -->
+        <section>
+            <div class="container">
+                <div class="info-block">
+                    <div class="hours">
+                        <i class="far fa-clock"></i>
+                        <h3>星穹时刻</h3>
+                        <p>周一至周五：08:30 - 22:00<br>
+                        周末 & 节假日：09:00 - 23:00<br>
+                        每月最后一个周三：星空夜读会 (19:00-21:30)</p>
+                    </div>
+                    <div class="quote">
+                        <i class="fas fa-quote-left"></i>
+                        <h3>咖啡诗人</h3>
+                        <blockquote>“咖啡是流淌在星辰之间的语言，苦涩与甜美都是宇宙给予的吻痕。”</blockquote>
+                        <p>— 星尘烘焙师 · 洛琳</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系/预订区域 -->
+        <section id="contact">
+            <div class="container">
+                <div class="contact-simple">
+                    <h3><i class="fas fa-calendar-alt"></i> 预约星空座位</h3>
+                    <p>预留窗边星空位，或是预定手冲分享体验，我们会在1小时内回复您</p>
+                    <form class="contact-form" id="reserveForm">
+                        <input type="text" placeholder="您的姓名" id="userName" required>
+                        <input type="email" placeholder="电子邮箱 / 手机号" id="userContact" required>
+                        <button type="submit" id="submitReserve">预约体验</button>
+                    </form>
+                    <div id="formFeedback" style="margin-top: 1rem; font-size: 0.9rem; color: #dbb47a;"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 星空咖啡馆 | 灵感源自无垠宇宙与匠心咖啡</p>
+            <div class="social-links">
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="微博"><i class="fab fa-weibo"></i></a>
+                <a href="#" aria-label="小红书"><i class="fab fa-sistrix"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function() {
+            // 1. 动态星空效果 (Canvas 粒子星空 + 闪烁)
+            const canvas = document.getElementById('stars-canvas');
+            const ctx = canvas.getContext('2d');
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            let stars = [];
+            const STAR_COUNT = 320; // 稍微增加星点更浪漫
+
+            function initStars() {
+                stars = [];
+                for(let i = 0; i < STAR_COUNT; i++) {
+                    stars.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        radius: Math.random() * 2.4 + 0.6,
+                        alpha: Math.random() * 0.7 + 0.2,
+                        twinkleSpeed: 0.003 + Math.random() * 0.025,
+                        twinkleDir: Math.random() > 0.5 ? 1 : -1
+                    });
+                }
+            }
+
+            function drawStars() {
+                if(!ctx) return;
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = '#020308';
+                ctx.fillRect(0, 0, width, height);
+                for(let s of stars) {
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                    // 动态闪烁效果
+                    let currentAlpha = s.alpha + Math.sin(Date.now() * s.twinkleSpeed) * 0.12;
+                    currentAlpha = Math.min(0.95, Math.max(0.2, currentAlpha));
+                    ctx.fillStyle = `rgba(255, 242, 210, ${currentAlpha})`;
+                    ctx.fill();
+                }
+                // 偶尔添加星光晕染
+                for(let s of stars) {
+                    if(s.radius > 1.6 && Math.random() < 0.002) {
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = '#fbe4b0';
+                        ctx.fillStyle = `rgba(255,215,150,0.4)`;
+                        ctx.arc(s.x, s.y, s.radius+0.8, 0, Math.PI*2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+                requestAnimationFrame(drawStars);
+            }
+
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                initStars();
+            }
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+            });
+            resizeCanvas();
+            drawStars();
+
+            // 2. Logo点击回到顶部 (增强品牌交互)
+            const brandLogo = document.getElementById('brandLogo');
+            if(brandLogo) {
+                brandLogo.addEventListener('click', () => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+
+            // 3. 按钮交互与平滑滚动
+            const exploreBtn = document.getElementById('exploreMenuBtn');
+            const fullMenuBtn = document.getElementById('fullMenuBtn');
+            const storyBtn = document.getElementById('storyBtn');
+            const reserveNavBtn = document.getElementById('reserveNavBtn');
+
+            function smoothScroll(targetId) {
+                const targetElem = document.getElementById(targetId);
+                if(targetElem) {
+                    targetElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            exploreBtn.addEventListener('click', () => smoothScroll('menu'));
+            fullMenuBtn.addEventListener('click', () => {
+                alert("✨ 完整菜单包含12款经典咖啡、5种手冲豆单及星空甜点，欢迎到店探索！");
+            });
+            storyBtn.addEventListener('click', () => {
+                alert("🌌 星空咖啡馆的故事：始于一个观星者对咖啡烘焙的执念，我们希望每一位客人都能在咖啡香气中仰望内心的星辰。");
+            });
+            reserveNavBtn.addEventListener('click', () => smoothScroll('contact'));
+
+            // 预约表单提交模拟 (优雅提示)
+            const reserveForm = document.getElementById('reserveForm');
+            const feedbackDiv = document.getElementById('formFeedback');
+            reserveForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const nameInput = document.getElementById('userName');
+                const contactInput = document.getElementById('userContact');
+                const nameVal = nameInput.value.trim();
+                const contactVal = contactInput.value.trim();
+                if(!nameVal || !contactVal) {
+                    feedbackDiv.innerHTML = '⭐ 请留下您的姓名和联系方式，以便我们为您预留星空座位。';
+                    feedbackDiv.style.color = '#e7c69f';
+                    return;
+                }
+                // 简单邮箱或手机格式友好提示（非严格校验，但让体验更佳）
+                let isEmail = contactVal.includes('@') && contactVal.includes('.');
+                let isPhone = /^[\\d\\s\\-+()]{7,18}$/.test(contactVal);
+                if(!isEmail && !isPhone) {
+                    feedbackDiv.innerHTML = '📞 建议填写有效的手机号或邮箱，方便我们联系您确认星空位✨';
+                    feedbackDiv.style.color = '#f5bc70';
+                    // 依然提交，不阻断体验
+                }
+                feedbackDiv.innerHTML = `🌙 感谢 ${nameVal}，预约已收到！星空使者将尽快通过 ${contactVal} 与您确认位置。期待在星河下与您相遇。`;
+                feedbackDiv.style.color = '#c9f0c2';
+                reserveForm.reset();
+                // 3秒后淡化提示但不消失（保留内容但稍微降低重要性）
+                setTimeout(() => {
+                    if(feedbackDiv.innerHTML.includes('期待在星河下与您相遇')) {
+                        feedbackDiv.style.opacity = '0.85';
+                    }
+                }, 2800);
+            });
+
+            // 导航栏链接平滑滚动
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    smoothScroll(targetId);
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
